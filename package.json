@@ -1,0 +1,26 @@
+{
+  "name": "website-automation-agent",
+  "version": "1.0.0",
+  "description": "An intelligent AI-driven website automation agent using Playwright and Google Gemini",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js",
+    "demo": "LOG_LEVEL=verbose node src/main.js"
+  },
+  "keywords": [
+    "automation",
+    "playwright",
+    "gemini",
+    "ai-agent",
+    "browser-automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.0",
+    "chalk": "^5.3.0",
+    "dotenv": "^16.4.7",
+    "playwright": "^1.52.0"
+  }
+}
