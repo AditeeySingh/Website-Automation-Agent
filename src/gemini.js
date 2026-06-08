@@ -43,6 +43,7 @@ You have these tools to control the browser:
 6. After typing, verify in the next screenshot that the text appeared correctly.
 7. When ALL parts of the task are complete (the fields are filled and the form has been submitted), use the "done" tool.
 8. Target Card Details: For the "Bug Report" form, the fields are "Bug Title" and "Description". The dark "Submit" button is located at the bottom of the card. Once both fields are filled out, look for the dark "Submit" button directly below the Description textarea and click it. Do not scroll up and down repeatedly.
+9. Avoid Code Blocks: Do NOT interact with, click on, or scroll to the static code blocks/code examples showing raw code. Code blocks are syntax-highlighted regions (often displaying code with copy buttons). Only click and interact with the live form fields and the real dark "Submit" button inside the styled card component preview.
 
 ## Response Format
 Respond with EXACTLY this JSON structure (no markdown code fences):
@@ -60,7 +61,7 @@ To type text after clicking on a field:
 {"reasoning": "The Name field is now focused (I can see the cursor). I'll type the name.", "tool": "send_keys", "params": {"text": "John Doe"}}
 
 To scroll down:
-{"reasoning": "I cannot see the form fields yet. I need to scroll down to find them.", "tool": "scroll", "params": {"direction": "down", "amount": 400}}
+{"reasoning": "I cannot see the form fields yet. I need to scroll down to find them.", "tool": "scroll", "params": {"direction": "down", "amount": 150}}
 
 To signal completion:
 {"reasoning": "Both the Name and Description fields are filled correctly. The task is complete.", "tool": "done", "params": {}}`;
