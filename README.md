@@ -1,154 +1,103 @@
-# 🤖 Website Automation Agent
+# 🤖 AI-Powered Website Automation Agent
 
-An intelligent AI-powered browser automation agent capable of autonomously navigating web pages, identifying interactive form elements visually, and filling them out — without any hardcoded DOM CSS selectors.
+An autonomous, AI-driven browser automation agent capable of navigating web pages, visually identifying form fields, and executing interactions (clicking, scrolling, typing) without hardcoded DOM CSS selectors. 
 
-Built using **Playwright** (browser control) and **Google Gemini 3.5/2.5 Flash** (multimodal vision & reasoning).
+Built using **Playwright** for browser instrumentation and **Google Gemini** for multimodal vision and orchestrating decisions.
 
 ---
 
 ## 📸 Interactive Demonstration
 
-Here is the agent in action executing the target form-filling task at `ui.shadcn.com`:
+The agent autonomously solves the form-filling task at the `ui.shadcn.com` React Hook Form documentation page:
 
-### 1. Initial State (Navigating & Scrolling)
-The agent opens Chromium, navigates to the React Hook Form documentation, and scrolls down to locate the interactive **Bug Report** form component.
+### 1. Navigation & Scrolling
+The agent launches Chromium, navigates to the page, and scrolls down to locate the interactive **Bug Report** form preview.
 
 ![Initial Page Load](./assets/initial_page.png)
 
-### 2. Auto-Filled State (Success)
-The agent visually localizes the form input elements on the card, focuses each field, and types the values mimicking human keypress delays.
+### 2. Auto-Filled Form (Success)
+The agent visually analyzes the form's layout, determines the pixel coordinates of the fields, clicks to focus, and types in the values (using natural keyboard entry delays).
 
 ![Filled Bug Report Form Card](./assets/filled_form.png)
 
 ---
 
-## 📋 Table of Contents
+## ✨ Features
 
-- [How It Works](#how-it-works)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Project Structure & Git Rules](#project-structure--git-rules)
-- [Running Locally](#running-locally)
-- [Cloud Hosting (GitHub Actions)](#cloud-hosting-github-actions)
-- [Architecture Details](#architecture-details)
+- **Decoupled Three-Layer Architecture:** decoulped orchestration (`agent.js`), AI vision engine (`gemini.js`), and Playwright drivers (`tools.js`).
+- **Visual Coordinate Targeting:** Behaviour is completely framework-agnostic. The agent clicks on elements using visual coordinate estimation (`page.mouse.click(x, y)`) rather than relying on brittle CSS selectors or shadow DOM paths.
+- **Human-like typing:** Types character-by-character with a configurable keypress delay (`50ms`) to satisfy React/Zod listeners and avoid validation race conditions.
+- **Resilient Retry Queue:** Implements exponential backoff to handle transient API issues, including rate limits (`429`) and model load spikes (`503`).
+- **Robust JSON Parsing:** Extracts action commands safely using bracket matching, making parsing immune to conversational text added by the LLM wrapper.
 
 ---
 
-## How It Works
+## 🚀 Getting Started
 
-The agent runs a continuous **Observe → Think → Act** loop:
+Follow these steps to run the agent locally on your machine.
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   OBSERVE   │────▶│    THINK    │────▶│     ACT     │
-│             │     │             │     │             │
-│ Capture PNG │     │ Send image  │     │ Playwright  │
-│ screenshot  │     │ to Gemini   │     │ mouse/kbd   │
-└─────────────┘     └─────────────┘     └─────────────┘
-       ▲                                       │
-       └───────────────────────────────────────┘
-                     (repeat)
-```
-
-1. **Observe:** Playwright captures a screenshot of the browser viewport.
-2. **Think:** The screenshot + action history + instructions are sent to Google Gemini. Gemini analyzes the visual space and estimates the exact coordinate points `(x, y)` of the target fields.
-3. **Act:** Playwright dispatches mouse clicks at the precise coordinates and types text with a `50ms` typing delay.
-4. **Repeat:** The loop continues until the form is submitted and the agent signals task completion.
-
----
-
-## Prerequisites
-
-- **Node.js** v18 or later
+### Prerequisites
+- **Node.js** (v18 or higher)
 - **npm** (comes with Node.js)
-- A **Google Gemini API Key** — [Get one free here](https://aistudio.google.com/apikey)
+- A **Google Gemini API Key** (Get a free key from [Google AI Studio](https://aistudio.google.com/apikey))
 
----
-
-## Installation
-
-### 1. Clone the project and install node modules
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/AditeeySingh/Website-Automation-Agent.git
 cd Website-Automation-Agent
+```
+
+### 2. Install Node Dependencies
+```bash
 npm install
 ```
 
-### 2. Install Playwright browser binaries
+### 3. Install Playwright Browsers
 ```bash
 npx playwright install chromium
 ```
 
-### 3. Setup configuration variables
-Copy the template configuration file:
+### 4. Configure Environment Key
+Copy the template `.env.example` file to `.env`:
 ```bash
 cp .env.example .env
 ```
-Open `.env` and paste your API key:
-```
-GEMINI_API_KEY=AIzaSy...your_key_here
+Open `.env` and configure your API key:
+```env
+GEMINI_API_KEY=AIzaSy...your_gemini_api_key
 ```
 
 ---
 
-## Project Structure & Git Rules
+## 💻 How to Run
 
-When uploading or modifying the project on GitHub, follow this structure and make sure to respect what is sent versus what is held back.
-
-```
-Website-Automation-Agent/
-├── .github/workflows/
-│   └── run-agent.yml  ← [TRACKED] GitHub Actions CI/CD Cloud Runner
-├── assets/            ← [TRACKED] Static screenshots showing project works (used in README)
-├── src/               ← [TRACKED] Core Source Code
-│   ├── main.js        ← Entry point (task definitions)
-│   ├── agent.js       ← Observe-Think-Act orchestrator
-│   ├── tools.js       ← Playwright browser tool wrapper
-│   ├── gemini.js      ← Gemini API client & system prompt
-│   └── logger.js      ← Terminal & file logging utility
-├── .gitignore         ← [TRACKED] Tells Git which files to hold back
-├── .env.example       ← [TRACKED] Template for API key configuration
-├── package.json       ← [TRACKED] Dependencies & run scripts
-├── ARCHITECTURE.md    ← [TRACKED] In-depth design decisions
-└── .env               ← [GITIGNORED] Contains private API keys (NEVER commit)
-```
-
-### 🛡️ File Security Rules
-* **Files to Commit (Send):** Commit code, documentation (`README.md`, `ARCHITECTURE.md`), configuration templates (`.env.example`), and workflow files.
-* **Files to Hold Back (Ignored):** Never commit the `.env` file (avoids leaking your Google API keys). Large dependencies (`node_modules/`) and local output artifacts (`screenshots/`, `logs/`) are also blocked by `.gitignore`.
-
----
-
-## Running Locally
-
-### Standard headed run:
-This launches a visible Chromium browser window so you can watch the AI agent operate.
+### Standard Run (Headed Mode)
+Launches a headed Chromium browser window so you can watch the AI agent interact in real time:
 ```bash
 npm start
 ```
 
-### Verbose mode (deep-dive console logs):
+### Verbose Mode (Detailed Console Outputs)
+Prints deep-dive trace logs for every screenshot capture, API call, and coordinate action:
 ```bash
 npm run demo
 ```
 
 ---
 
-## Cloud Hosting (GitHub Actions)
+## 🛠️ Project Architecture
 
-This project is configured with a **GitHub Actions workflow** to run headlessly in the cloud.
-
-### Setup Instructions:
-1. Push your code to your repository: `https://github.com/AditeeySingh/Website-Automation-Agent`.
-2. Go to your repository settings: **Settings** → **Secrets and variables** → **Actions**.
-3. Click **New repository secret**, name it **`GEMINI_API_KEY`**, and paste your API key.
-4. Go to the **Actions** tab on GitHub, select **Run Website Automation Agent**, and click **Run workflow**.
-5. Once completed, download the generated **screenshots** or **logs** directly from the run dashboard!
-
----
-
-## Architecture Details
-
-- **Visual Coordinate Targeting:** Decoupled from HTML selectors. The agent is completely framework-agnostic because it uses pixel-space coordinate clicking (`mouse.click(x, y)`). It works on React, Vue, Svelte, or vanilla layouts.
-- **Robust JSON Parser:** Uses bracket index matching to extract clean JSON blocks from model outputs even if the model responds with conversational headers/footers.
-- **Resilient Retry Queue:** Implements exponential backoff to handle transient API issues, including rate limits (`429`) and server load spikes (`503`).
+```
+Website-Automation-Agent/
+├── assets/            ← Static screenshots showing the agent in action
+├── src/               
+│   ├── main.js        ← Entry point (defines target task instructions)
+│   ├── agent.js       ← Observe-Think-Act state machine orchestrator
+│   ├── tools.js       ← Playwright automation tool wrappers
+│   ├── gemini.js      ← Gemini API client & system instruction prompt
+│   └── logger.js      ← Color-coded terminal and file logging utility
+├── .gitignore         
+├── .env.example       ← Configuration template
+├── package.json       
+└── ARCHITECTURE.md    ← Comprehensive documentation on design decisions
+```
